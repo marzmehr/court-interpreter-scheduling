@@ -50,7 +50,8 @@ class OpenIDConnect:
 
         auth_token = self.get_auth_token(code, callback_uri)
         id_token = auth_token.get("id_token")
-
+        # print("______")
+        # print(auth_token)
         #Check Token Validity
         try:
             alg = jwt.get_unverified_header(id_token).get("alg")
@@ -67,7 +68,7 @@ class OpenIDConnect:
         user_info = self.get_user_info(auth_token.get("access_token"))
         self.validate_sub_matching(validated_token, user_info)
     
-        return user_info, auth_token.get("refresh_token")
+        return user_info, auth_token.get("refresh_token"), auth_token.get("refresh_expires_in")
 
     def get_auth_redirect_uri(self, callback_uri, session_key):
         return "{}?kc_idp_hint={}&response_type=code&scope={}&client_id={}&redirect_uri={}&state={}".format( 

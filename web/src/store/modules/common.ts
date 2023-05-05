@@ -18,7 +18,8 @@ class Common extends VuexModule {
     public courtLocations: locationsInfoType[] = [];
     public languages: languagesInfoType[] = [];
     public rates: ratesInfoType[] = [];
-    public holidays: holidaysInfoType[] = [] ; 
+    public holidays: holidaysInfoType[] = [] ;
+    public sessionExpiry = null; 
 
     // public accountInfo = {} as accountInfoType;
 
@@ -119,6 +120,15 @@ class Common extends VuexModule {
     public UpdateHolidays(newHolidays: holidaysInfoType): void {
         this.context.commit('setHolidays', newHolidays)
     }
+
+    @Mutation
+	public setSessionExpiry(sessionExpiry): void {   
+	  this.sessionExpiry = sessionExpiry
+	}
+	@Action
+	public UpdateSessionExpiry(newSessionExpiry): void {
+	   this.context.commit('setSessionExpiry', newSessionExpiry)
+	}
 
     // @Mutation
     // public setLocationsInfo(locationsInfo: locationsInfoType[]): void {   

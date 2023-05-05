@@ -72,6 +72,16 @@
                     </div>
                 </div>
 
+                <div v-if="sessionTime" id="app-exit" class="app-exit">
+                    <b-card no-body
+                        :class="sessionClass">
+                        <b-row class="m-0">
+                            <span><b-icon-stopwatch scale="1.2" /></span>
+                            <span class="ml-2">{{sessionMin}}' {{sessionSec}}"</span>
+                        </b-row>
+                    </b-card>
+                </div>
+
                 <button class="navbar-toggler"
                     type="button"
                     data-toggle="collapse"
@@ -113,10 +123,19 @@ export default class NavigationTopbar extends Vue {
     @commonState.Action
     UpdateUserLocation!: (newUserLocation: locationsInfoType) => void
 
+    @commonState.State
+    public sessionExpiry!: number;
+
     userCourtLocation: number =0;
 
     dismissCountDown =0
     alertType=""
+
+    timeHandle1
+    sessionTime=0
+    sessionMin=0
+    sessionSec=""
+    sessionClass=""
 
     @Watch('courtLocations')
     UserNameChange() 
@@ -124,11 +143,43 @@ export default class NavigationTopbar extends Vue {
         this.userCourtLocation = this.userLocation?.id
     }
 
+    @Watch('sessionExpiry')
+    sessionExpiryChange()
+    {
+        if(this.sessionExpiry){
+            clearTimeout(this.timeHandle1);
+            this.sessionTime=Number(this.sessionExpiry)
+            setTimeout(this.getUpdatingInfo, 1);
+        }
+    }
+
     mounted(){
         this.userCourtLocation = this.userLocation?.id 
+        this.sessionExpiryChange()
+    }
+
+    public getUpdatingInfo(){                
+        
+        
+        if(this.sessionTime>300) 
+            this.sessionClass="text-success"
+        else 
+            this.sessionClass="text-danger"
+        
+        clearTimeout(this.timeHandle1);
+        if(this.sessionTime>1){
+            this.sessionTime--;
+            this.sessionMin = Math.floor(this.sessionTime/60)
+            const sessionSec = (this.sessionTime%60)
+            this.sessionSec = sessionSec<10 ? ('0'+sessionSec) : String(sessionSec)
+            this.timeHandle1 = window.setTimeout(this.getUpdatingInfo, 1000);
+        }else if(this.sessionTime==1){
+            this.logout()
+        }       
     }
 
     public logout() {
+        clearTimeout(this.timeHandle1);
         SessionManager.logout(this.$store);
     }
 
@@ -196,6 +247,21 @@ export default class NavigationTopbar extends Vue {
 
 #app-profile {
   color: $gov-white;
+}
+
+#app-exit {
+    padding: 8px 15px;
+    position: absolute;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 100;
+    .card {
+        border-radius: 1rem;
+        font-size: 110%;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+    }
 }
 
 .alert{

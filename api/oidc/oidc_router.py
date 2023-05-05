@@ -10,7 +10,7 @@ from uuid import uuid4
 from core.config import settings
 from oidc.oidc_user_repository import oidc_user_repository
 from core import JWTtoken
-
+from datetime import datetime
 import base64
 import hashlib
 
@@ -64,7 +64,7 @@ async def oidc_login_callback(request: Request, db: Session = Depends(get_db_ses
     request.session.clear()
     
     callback_uri = f"{getBaseUrl(request)}{request.url.path}"
-    oidc_userinfo, oidc_refresh_token = oidc.authenticate(code, callback_uri, include_user_info=True)
+    oidc_userinfo, oidc_refresh_token, oidc_token_expiry = oidc.authenticate(code, callback_uri, include_user_info=True)
     
     # _____________________________
     # print("_________OIDC_AUTH____________")
@@ -73,6 +73,9 @@ async def oidc_login_callback(request: Request, db: Session = Depends(get_db_ses
     
     request.session["oidc_refresh_token"] = oidc_refresh_token
     request.session["oidc_user_email"] = oidc_userinfo['email']
+    time = datetime.utcnow()    
+    request.session["session_time"] = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    request.session["oidc_token_expiry"] = oidc_token_expiry
     
     #___________GOTO the Frontend Route__________
     if ("x-forwarded-host" not in request.headers 
@@ -98,7 +101,9 @@ def web_login_callback(request: Request):
     
     request.session["oidc_refresh_token"] = None
     request.session["oidc_auth_state"] = None 
-    request.session["oidc_user_email"] = None 
+    request.session["oidc_user_email"] = None
+    request.session["session_time"] = None 
+    request.session["oidc_token_expiry"] = None
     request.session.clear()
     
     return logout_request(callback_uri) #RedirectResponse(f"{oidc.logout_uri}?redirect_uri={callback_uri}")
@@ -117,6 +122,8 @@ def web_login_callback(request: Request):
     request.session["oidc_refresh_token"] = None
     request.session["oidc_auth_state"] = None 
     request.session["oidc_user_email"] = None
+    request.session["session_time"] = None
+    request.session["oidc_token_expiry"] = None
     request.session.clear()
 
     session_key = str(uuid4())
@@ -139,6 +146,8 @@ def web_logout_user(request: Request):
     request.session["oidc_user_email"] = None 
     request.session["oidc_refresh_token"] = None
     request.session["oidc_auth_state"] = None
+    request.session["session_time"] = None
+    request.session["oidc_token_expiry"] = None
     request.session.clear()
     
     callback_uri = f"{getBaseUrl(request)}{request.url.path}"+"/cb"
@@ -153,6 +162,8 @@ def oidc_logout_done(request: Request):
     request.session["oidc_user_email"] = None 
     request.session["oidc_refresh_token"] = None
     request.session["oidc_auth_state"] = None
+    request.session["session_time"] = None
+    request.session["oidc_token_expiry"] = None
     request.session.clear()
 
     if ("x-forwarded-host" not in request.headers 
@@ -170,7 +181,7 @@ def oidc_logout_done(request: Request):
 @router.get('/token')
 def token_user(request: Request, db: Session = Depends(get_db_session)):
     
-    login_response = {"access_token": None, "token_type": "bearer", "login_url":getLoginUrl(request), "logout_url":getLogoutUrl(request)}
+    login_response = {"access_token": None, "token_type": "bearer", "login_url":getLoginUrl(request), "logout_url":getLogoutUrl(request), "session_time": None, "token_time": None, "token_expiry":None}
     
     # print("________REFRESH__TOKEN______")
     
@@ -198,8 +209,13 @@ def token_user(request: Request, db: Session = Depends(get_db_session)):
 
         oidc_user = oidc_user_repository(oidc_userinfo, oidc_user_roles, db)
         access_token = JWTtoken.create_access_token(data={"sub": oidc_user.user.email, "username": oidc_user.user.username})
-       
-        return {"access_token": access_token, "token_type": "bearer", "login_url":None, "logout_url":getLogoutUrl(request)}
+               
+        session_time = request.session.get("session_time")
+        token_expiry = request.session.get("oidc_token_expiry")
+        time = datetime.utcnow()
+        token_time = time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        
+        return {"access_token": access_token, "token_type": "bearer", "login_url":None, "logout_url":getLogoutUrl(request), "session_time":session_time, "token_time": token_time, "token_expiry":token_expiry}
     else:
         return login_response
 
