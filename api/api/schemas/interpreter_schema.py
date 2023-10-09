@@ -92,7 +92,7 @@ class InterpreterADMBookingResponseSchema(InterpreterBookingResponseSchema):
 
 class InterpreterGeoStatusSchema(BaseModel):
     id: int
-    update_started = False
+    update_started: bool = False
     last_name: Optional[str] = Field(alias="lastName")
     first_name: Optional[str] = Field(alias="firstName")
 
