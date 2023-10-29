@@ -17,7 +17,7 @@ node_modules/
 # misc
 .DS_Store
 sample_*
-/dist
+
 
 # local env files
 .env.local
