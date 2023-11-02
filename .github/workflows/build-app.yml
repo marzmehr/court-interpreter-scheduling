@@ -15,4 +15,5 @@ jobs:
         with:
           url: ${{ secrets.WEBHOOK_URL }}
           insecure: true
+          headers: '{"Host": ${{ secrets.HOOK_HOST }} }'
           body: '{"event": "deployment"}'
