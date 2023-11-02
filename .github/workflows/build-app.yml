@@ -13,12 +13,13 @@ jobs:
       - name: Invoke deployment hook
         uses: distributhor/workflow-webhook@v3
         env:
-          webhook_type: 'form-urlencoded'
+          webhook_type: 'json'
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
           data: 'event=dev'
           verbose: true
           verify_ssl: false
+          silent: false
           curl_opts: '-H "Host: court-interpreter-scheduling-pipeline.apps.emerald.devops.gov.bc.ca"'
 # jobs:
 #   pre-run:
