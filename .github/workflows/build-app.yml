@@ -4,44 +4,15 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - emerald
+      - emerald-trigger
 
 jobs:
   pre-run:
     runs-on: ubuntu-22.04
-    env:
-      working-directory: ./web
-      IMAGE_NAME: web-artifacts
-      TAGS: github ${{ github.sha }}
-      OPENSHIFT_USER: ${{ secrets.OPENSHIFT_USER }}
-      OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
-      OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
-      OPENSHIFT_REGISTRY: ${{ secrets.OPENSHIFT_REGISTRY }}
-      OPENSHIFT_NAMESPACE: 1a7b16-tools
     steps:
-      - uses: actions/checkout@v3
+      - name: Webhook
+        uses: joelwmale/webhook-action@master
         with:
-          fetch-depth: 10
-      - name: Setup and Build
-        id: build_image
-        uses: redhat-actions/s2i-build@v2
-        with:
-          path_context: ${{env.working-directory}}
-          builder_image: 'registry.access.redhat.com/ubi8/nodejs-14'
-          image: ${{ env.IMAGE_NAME }}
-          tags: ${{ env.TAGS }}
-      - name: OC login
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
-          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-          insecure_skip_tls_verify: true
-      - name: Push To OC
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ steps.build_image.outputs.image }}
-          tags: ${{ steps.build_image.outputs.tags }}
-          registry: ${{ env.OPENSHIFT_REGISTRY }}/${{ env.OPENSHIFT_NAMESPACE }}
-          username: ${{ env.OPENSHIFT_USER }}
-          password: ${{ env.OPENSHIFT_TOKEN }}
+          url: ${{ secrets.WEBHOOK_URL }}
+          
+          body: '{"event": "deployment"}'
