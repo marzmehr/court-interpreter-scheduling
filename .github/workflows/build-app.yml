@@ -15,5 +15,5 @@ jobs:
         with:
           url: ${{ secrets.WEBHOOK_URL }}
           insecure: true
-          headers: ${{ secrets.HOOK_HOST }}
+          headers: '{"Host": "court-interpreter-scheduling-pipeline.apps.emerald.devops.gov.bc.ca"}'
           body: '{"event": "deployment"}'
