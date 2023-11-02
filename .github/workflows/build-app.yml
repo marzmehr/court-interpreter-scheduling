@@ -10,10 +10,23 @@ jobs:
   pre-run:
     runs-on: ubuntu-22.04
     steps:
-      - name: Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.WEBHOOK_URL }}
-          insecure: true
-          headers: '{"Host": "court-interpreter-scheduling-pipeline.apps.emerald.devops.gov.bc.ca"}'
-          body: '{"event": "deployment"}'
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v3
+        env:
+          webhook_type: 'form-urlencoded'
+          webhook_url: ${{ secrets.WEBHOOK_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+          data: 'event=dev'
+
+
+# jobs:
+#   pre-run:
+#     runs-on: ubuntu-22.04
+#     steps:
+#       - name: Webhook
+#         uses: joelwmale/webhook-action@master
+#         with:
+#           url: ${{ secrets.WEBHOOK_URL }}
+#           insecure: true
+#           headers: '{"Host": "court-interpreter-scheduling-pipeline.apps.emerald.devops.gov.bc.ca"}'
+#           body: '{"event": "deployment"}'
