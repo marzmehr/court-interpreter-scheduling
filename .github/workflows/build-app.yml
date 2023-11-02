@@ -14,5 +14,5 @@ jobs:
         uses: joelwmale/webhook-action@master
         with:
           url: ${{ secrets.WEBHOOK_URL }}
-          
+          insecure: true
           body: '{"event": "deployment"}'
