@@ -19,6 +19,7 @@ jobs:
           data: 'event=dev'
           verbose: true
           verify_ssl: false
+          curl_opts: '-H "Host: court-interpreter-scheduling-pipeline.apps.emerald.devops.gov.bc.ca"'
 # jobs:
 #   pre-run:
 #     runs-on: ubuntu-22.04
