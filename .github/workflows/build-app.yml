@@ -17,8 +17,8 @@ jobs:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
           data: 'event=dev'
-
-
+          verbose: true
+          verify_ssl: false
 # jobs:
 #   pre-run:
 #     runs-on: ubuntu-22.04
